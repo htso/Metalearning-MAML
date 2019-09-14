@@ -666,12 +666,6 @@ def test(model, saver, sess, exp_string, data_generator, test_grad_steps, gnm):
 
 def main():
     
-    #model_folder = 'Fun=2_ph=0-pi_amp=1_w=0.1-0.2_mbs=10_K=10_grad_steps=10_updateLR=0.01_Iter=100k'
-    #model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=10_grad_steps=10_updateLR=0.01Iter=100k'
-    #model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=10_grad_steps=10_updateLR=0.01Iter=100000_H=60-60'
-    #model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=10_grad_steps=10_updateLR=0.01Iter=100000_H=80-80'
-    #model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=1000_grad_steps=10_updateLR=0.01Iter=10000_H=80-80'
-    #model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=1000_grad_steps=10_updateLR=0.01Iter=10000_H=40-40'
     model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=1000_grad_steps=10_updateLR=0.01Iter=10000_H=60-60'
 
     print('meta_batch_size :', FLAGS.meta_batch_size)

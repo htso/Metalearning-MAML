@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This is an attempt to reproduce the results of the MAML paper of Finn et al (2017)(https://arxiv.org/abs/1703.03400)[1], the need of which is explained in [2]. Maml is a meta-learning algorithm that learns to generalize from a few data points. It's about how a neural network in the K-shot regime learns and stays fit, ie. neither under nor overfit. The fundamental premise in this paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid learning and generalization. 
+This is an attempt to reproduce the results of the MAML paper of [Finn et al (2017)[1]](https://arxiv.org/abs/1703.03400), the need of which is explained in [2]. Maml is a meta-learning algorithm that learns to generalize from a few data points. It's about how a neural network in the K-shot regime learns and stays fit, ie. neither under nor overfit. The fundamental premise in this paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid learning and generalization. 
 
 My key finding is that under a specific generator settings, their supervised regression result is reproducible. However, I found that maml deteriorates quickly as the training data deviates from the standard form. It is unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but I think it's not unexpected. 
 
@@ -18,7 +18,7 @@ To reproduce a published result, I believe it's not enough to just run the githu
 
 
 
-## New Data
+## Data
 
 
 ## Results
