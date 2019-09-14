@@ -10,7 +10,9 @@ My key finding is that under a specific data setting, their supervised regressio
 
 Maml, short for Model-Agnostic Meta-Learning, finds patterns in learning that could be extended to solve problems it's never seen before. The motivation comes from the fact that any two-year old could recognize a giraffe after seeing a few examples, in contrast with the current deep learning models training on millions of data points just to do as well as a two-year old baby. 
 
-The objective of the algorithm is the sum of the losses on all the tasks that is fed to maml collectively, ![objective](Img/meta_objective.png). The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png).
+The objective of the algorithm is the sum of the losses on all the tasks that is fed to maml collectively, ![objective](Img/meta_objective.png). 
+
+The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png).
 
 
 
