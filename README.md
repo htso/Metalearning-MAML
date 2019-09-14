@@ -24,6 +24,18 @@ To reproduce a published result, I believe it's not enough to just run the githu
 ## Results
 ![Fig1](Img/Fig1.jpg)
 
+![Fig2](Img/Fig2.jpg)
+
+![Fig3](Img/Fig3.jpg)
+
+![Fig4](Img/Fig4.jpg)
+
+![Fig5](Img/Fig5.jpg)
+
+![Fig6](Img/Fig6.jpg)
+
+![Fig7](Img/Fig7.jpg)
+
 
 ## Conclusion
 
