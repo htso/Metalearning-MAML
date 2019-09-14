@@ -22,7 +22,7 @@ To reproduce a published result, I believe it's not enough to just run the githu
 
 
 ## Results
-![Fig1](img/Fig1.jpg)
+![Fig1](Img/Fig1.jpg)
 
 
 ## Conclusion
