@@ -4,7 +4,7 @@ This is an attempt to reproduce the results in the MAML paper of [Finn et al (20
 
 The basic premise of the paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid adaptation and generalization. *Maml* uses the standard technique of gradient descent. But instead of descending onto an optimal parameter for a neural network, it uses gradient decent to find some *common* starting point for a pool of models to begin their individual gradient descent learning.
 
-My key finding is that under a specific data setting, their supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard form. It seems unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but it's **not** unexpected. 
+My key finding is that under a specific data setting, their supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard form. It seems unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but it's **not** unexpected. And I'll speculate the reasons that this is so.
 
 ## Introduction
 
@@ -12,7 +12,7 @@ My key finding is that under a specific data setting, their supervised regressio
 
 The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most of the papers in this area make one key assumption :
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__*although data is sparse, problems are abundant*__
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__although data is sparse, problems are abundant__
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, then we could gain insights into the overall learning pattern. Using this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
@@ -22,7 +22,7 @@ Interested reader should dive into this paper, and I will skip the technicality 
 
 2. The objective of the algorithm is the sum of the losses on all the tasks that is fed into *maml* collectively, ![objective](Img/meta_objective.png). 
 
-As I'm only interested in supervised regression here, the loss is just MSE. 
+So, by optimizing on this total loss, we're effectively finding out what's the best characteristics for all the models to share on a given task distribution. As I'm only interested in supervised regression here, the loss is just MSE in this experiment. 
 
 3. The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png)
 
