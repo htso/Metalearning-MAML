@@ -39,15 +39,15 @@ Similar to an ablation study[3], I want to poke around the neighborhood of the m
 
 
 ## Data
-I made some modifications to their data generator to include a variety of functional shapes (see `FunGenerator.py`). First, as a natural extension I introduce an angular frequency to the sine function, ie. f(x) = a\\*sin(w\\*x+ph). Two other simple varieties are added, namely, sum of a sine and cosine, product of sine and cosine. Think of them as the first few terms in a Fourier series. No big deal.
+I made some modifications to their data generator to include a variety of functional shapes (see `FunGenerator.py`). First, as a natural extension I introduce an angular frequency to the sine function, ie. f(x) = a`*`sin(w`*`x+ph). Two other simple varieties are added, namely, sum of a sine and cosine, product of sine and cosine. Think of them as the first few terms in a Fourier series. No big deal.
 
 The meta distribution, or the task distribution is based on sampling from the parameters of these functions within some predefined range, just like in their paper. 
 
 I also included a special function to test the algorithm, namely, a straight line. I will discuss the surprising result in the next section. 
 
-To examine *maml's* out-of-sample performance, I adopt the following convention from time series modeling. Treating the data as a time sequence, I divide a random draw from the meta distribution into a training, a validation, and a test set. The train and validation set will be randomly selected from the first 80% of the sequence, while the remaining 20% is used as test. Thus, the train and validation set overlaps, but the test set does not. 
+To examine *maml's* out-of-sample performance, I adopt the following convention from time series modeling. Treating the data as a time sequence, I divide a random draw from the meta distribution into a training, a validation, and a test set. The train and validation set will be randomly selected from the first 80% of the time steps, while the last 20% is used as test. Thus, the train and validation set overlaps, but the test set does not. 
 
-The intention is to let the model learn any periodicity it could find in the combination of train and validation set. But model is not allowed see into the "future", which is the test set.
+The intention is to let the model learn any periodicity it could find in the combination of train and validation set. But the model is not allowed see into the "future", which is the test set.
 
 Once a meta-model is learned, I use it to produce a model to predict on the test set. And that will be the out-of-sample performance measure.
 
