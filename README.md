@@ -16,7 +16,7 @@ The challenge is of course how to make use of so little information to generaliz
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, then we could gain insights into the overall learning pattern. Using this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
-Interested reader should dive into this paper, and I will skip the technicality here, except for the following observations.
+Interested reader should dive into this excellent paper, and I will skip the technicality here, except for the following observations.
 
 1. The *maml* model is not a model on data, but a model on the starting parameter values of a pool of models, thus the term *meta*.
 
@@ -38,9 +38,21 @@ To demonstrate 1), I will show the out-of-sample prediction of the models learne
 Similar to an ablation study[3], I want to poke around the neighborhood of the meta space to identify  regimes where the model, in this case the meta-model is sensitive to the distribution of tasks and how far I could go before learning fails.
 
 
-
 ## Data
-I modified and extended the data generator in her github to include a variety of functional shapes (see `FunGenerator.py`). 
+I made some modifications to their data generator to include a variety of functional shapes (see `FunGenerator.py`). First, as a natural extension I introduce an angular frequency to the sine function, ie. f(x) = a*sin(w*x+ph). Two other simple varieties are added, namely, sum of a sine and cosine, product of sine and cosine. Think of them as the first few terms in a Fourier series. No big deal.
+
+The meta distribution, or the task distribution is based on sampling from the parameters of these functions within some predefined range, just like in their paper. 
+
+I also included a special function to test the algorithm, namely, a straight line. I will discuss the surprising result in the next section. 
+
+To examine *maml's* out-of-sample performance, I adopt the following convention from time series modeling. Treating the data as a time sequence, I divide a random draw from the meta distribution into a training, a validation, and a test set. The train and validation set will be randomly selected from the first 80% of the sequence, while the remaining 20% is used as test. Thus, the train and validation set overlaps, but the test set does not. 
+
+The intention is to let the model learn any periodicity it could find in the combination of train and validation set. But model is not allowed see into the "future", which is the test set.
+
+
+
+
+
 
 ## Results
 ![Fig1](Img/Fig1.jpg)
