@@ -45,7 +45,9 @@ The meta distribution, or the task distribution is based on sampling from the pa
 
 I also included a special function to test the algorithm, namely, a straight line. I will discuss the surprising result in the next section. 
 
-To examine *maml's* out-of-sample performance, I adopt the following convention from time series modeling. Treating the data as a time sequence, I divide a random draw from the meta distribution into a training, a validation, and a test set. The train and validation set will be randomly selected from the first 80% of the time steps, while the last 20% is used as test. Thus, the train and validation set overlaps, but the test set does not. ![split_graph](Img/split_graph.png)
+To examine *maml's* out-of-sample performance, I adopt the following convention from time series modeling. Treating the data as a time sequence, I divide a random draw from the meta distribution into a training, a validation, and a test set. The train and validation set will be randomly selected from the first 80% of the time steps, while the last 20% is used as test. Thus, the train and validation set overlaps, but the test set does not. 
+
+![split_graph](Img/split_graph.png)
 
 The intention is to let the model learn any periodicity it could find in the combination of train and validation set. But the model is not allowed see into the "future", which is the test set.
 
