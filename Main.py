@@ -414,11 +414,11 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0, gnm="Los
             bn_3 = Wval['b3']
 
             # Angle between two adjacent parameter vectors            
-            W1_angles.append(Step_Angle(Wn_1, W1_prev))
-            W2_angles.append(Step_Angle(Wn_2, W2_prev))
-            W3_angles.append(Step_Angle(Wn_3, W3_prev))
-            b1_angles.append(Step_Angle(bn_1, b1_prev))
-            b2_angles.append(Step_Angle(bn_2, b2_prev))
+            W1_angles.append(Step_CosineSimilarity(Wn_1, W1_prev)[0])
+            W2_angles.append(Step_CosineSimilarity(Wn_2, W2_prev)[0])
+            W3_angles.append(Step_CosineSimilarity(Wn_3, W3_prev)[0])
+            b1_angles.append(Step_CosineSimilarity(bn_1, b1_prev)[0])
+            b2_angles.append(Step_CosineSimilarity(bn_2, b2_prev)[0])
             W1_prev = Wn_1
             W2_prev = Wn_2
             W3_prev = Wn_3
@@ -430,12 +430,12 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0, gnm="Los
             # I use it as a measure of learning, ie. how far have they moved from the state of
             # complete ignorance. Euclidean distance is used; not sure if the choice
             # matters at all.
-            W1_dist.append(Step_Distance(Wn_1, W1_start))
-            W2_dist.append(Step_Distance(Wn_2, W2_start))
-            W3_dist.append(Step_Distance(Wn_3, W3_start))
-            b1_dist.append(Step_Distance(bn_1, b1_start))
-            b2_dist.append(Step_Distance(bn_2, b2_start))
-            b3_dist.append(Step_Distance(bn_3, b3_start))
+            W1_dist.append(Step_L2_Distance(Wn_1, W1_start))
+            W2_dist.append(Step_L2_Distance(Wn_2, W2_start))
+            W3_dist.append(Step_L2_Distance(Wn_3, W3_start))
+            b1_dist.append(Step_L2_Distance(bn_1, b1_start))
+            b2_dist.append(Step_L2_Distance(bn_2, b2_start))
+            b3_dist.append(Step_L2_Distance(bn_3, b3_start))
 
     #pp = PdfPages(gnm)
     fig, ax = plt.subplots(4, 2, sharex=False, sharey=False, figsize=(10, 20))
