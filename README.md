@@ -6,7 +6,7 @@ The basic premise of the paper is that parameter initialization has important in
 
 My key finding is that under a specific data setting, their supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard form. It seems unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but it's **not** unexpected. And I'll speculate the reasons that this is so.
 
-## Introduction
+### Introduction
 
 *Maml*, short for Model-Agnostic Meta-Learning, falls in the category of K-shot learning where K, the number of available examples, is usually no more than 20. The motivation comes from the fact that any two-year old could recognize a giraffe after seeing a few examples, in contrast with the many deep learning models training on millions of data points just to do as well as a new-born human. 
 
@@ -29,7 +29,7 @@ So, by optimizing on this total loss, we're effectively finding out what's the b
 Notice the minimization is over the initial parameters before taking the first gradient step in the inner loop, i.e the \theta without subscript.
 
 
-## Reproduction Methodology
+### Reproduction Methodology
 
 To reproduce a published result, it's not enough to just run the github code on a given datasets. An algorithm must be judged on an out-of-sample basis, ie. it must demonstrate its ability to generalize. In the case of meta-learning, this requirement has implication on two levels. First, with high probability, *maml* needs to give birth to a model that does well on a test set that it wasn't trained on. Secondly, it must be able to learn as rapidly and stay as fit on tasks drawn from a sufficiently large portion of the meta distribution. So, to succeed as a meta-learning algorithm, I want to demonstrate that 1) a large fraction of the resultant models have good out-of-sample performance, 2) the model learning remains robust to slight perturbation in the meta distribution. 
 
@@ -38,7 +38,7 @@ To demonstrate 1), I will show the out-of-sample prediction of the models learne
 Similar to an ablation study[3], I want to poke around the neighborhood of the meta space to identify  regimes where the model, in this case the meta-model is sensitive to the distribution of tasks and how far I could go before learning fails.
 
 
-## Data
+### Data
 I made some modifications to their data generator to include a variety of functional shapes (see `FunGenerator.py`). First, as a natural extension I introduce an angular frequency to the sine function, ie. f(x) = a`*`sin(w`*`x+ph). Two other simple varieties are added, namely, sum of a sine and cosine, product of sine and cosine. Think of them as the first few terms in a Fourier series. No big deal.
 
 The meta distribution, or the task distribution is based on sampling from the parameters of these functions within some predefined range, just like in their paper. 
@@ -54,7 +54,7 @@ The intention is to let the model learn any periodicity it could find in the com
 Once a meta-model is learned, I use it to produce a model to predict on the test set. And that will be the out-of-sample performance measure.
 
 
-## Results
+### Results
 Since the data are 2D functions, the best assessment is by visualization and that's exactly what I have below. 
 
 This first graph (Fig 1) is Finn's regression problem with identical parameters. The amplitude and phase of the sine are allowed to vary between [1.0, 5.0] and [0, pi], respectively. I set the number of gradient update steps (`num_updates`) to 20, just to be generous -- the paper has 1 and 10. The graph on the left shows the actual data used in training (black points) and the fit (red). The right graph shows the predictions on the test set that it has never seen in training, after taking one and 20 gradient steps. The K-shot learned neural net is able to predict the upturn in the sine wave. It also shows that 20 gradient steps is better than one. So, overall, excellent result.
@@ -76,13 +76,13 @@ In Fig 6 is a more challenging functional shape, a superposition of sine and cos
 
 
 
-## Some Thoughts
+### Some Thoughts
 
 
-## Conclusion
+### Conclusion
 
 
-## Code
+### Code
 The code is taken from this [repo](https://github.com/cbfinn/maml). 
 
 ### Dependencies
