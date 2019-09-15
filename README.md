@@ -12,7 +12,7 @@ My key finding is that under a specific data setting, their supervised regressio
 
 The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most of the papers in this area make one key assumption :
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*although data is sparse, problems are abundant*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__*although data is sparse, problems are abundant*__
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, then we could gain insights into the overall learning pattern. Using this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
