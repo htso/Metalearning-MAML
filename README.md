@@ -54,27 +54,27 @@ The intention is to let the model learn any periodicity it could find in the com
 Once a meta-model is learned, I use it to produce a model to predict on the test set. And that will be the out-of-sample performance measure.
 
 
-
-
 ## Results
-Since the data are simple 2D functions, the best assessment is by visualization and that's exactly what I have below. 
+Since the data are 2D functions, the best assessment is by visualization and that's exactly what I have below. 
 
-
-
+This first graph (Fig 1) is Finn's regression problem with identical parameters. The amplitude and phase of the sine are allowed to vary between [1.0, 5.0] and [0, pi], respectively. I set the number of gradient update steps (`num_updates`) to 20, just to be generous -- the paper has 1 and 10. The graph on the left shows the actual data used in training (black points) and the fit (red). The right graph shows the predictions on the test set that it has never seen in training, after taking one and 20 gradient steps. The K-shot learned neural net is able to predict the upturn in the sine wave. It also shows that 20 gradient steps is better than one. So, overall, excellent result.
 
 ![Fig1](Img/Fig1.jpg)
 
+In Fig 2, I allow the amplitude to span a wider range, from 0.1 to 10. The out-of-sample predictions start to deteriorate (right graph). But overall, it still knows the function is upward in the test range. 
+
 ![Fig2](Img/Fig2.png)
+
+Next in Fig 3, phase is allowed to vary from Pi to 2`*`Pi. The out-of-sample predictions show a markedly different pattern from actual. More gradient updates help a little bit, but it's still unable to figure out that the peak in the sine function occurs at around 3.7.
 
 ![Fig3](Img/Fig3.png)
 
-![Fig4](Img/Fig4.png)
-
-![Fig5](Img/Fig5.png)
+In Fig 6 is a more challenging functional shape, a superposition of sine and cosine, which is still periodic. The test predictions bear no resemblance to actual regardless of the number of gradient updates.
 
 ![Fig6](Img/Fig6.png)
 
-![Fig7](Img/Fig7.png)
+
+
 
 ## Some Thoughts
 
