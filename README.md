@@ -2,7 +2,7 @@
 
 This is an attempt to reproduce the results in the MAML paper of [Finn et al (2017)[1]](https://arxiv.org/abs/1703.03400), the need of which is explained in [2]. *Maml* is a meta-learning algorithm that learns to generalize from the experience of learning. 
 
-The basic premise of the paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid adaptation and generalization. *Maml* takes the usual approach of gradient descent. However, instead of descending onto an optimal parameter for a neural network, it uses gradient decent to find some *common* starting point for all the models to begin their individual gradient descent learning.
+The basic premise of the paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid adaptation and generalization. *Maml* takes the usual approach of gradient descent. However, instead of descending onto an optimal parameter for a neural network, it uses gradient decent to find some *common* starting point for a pool of models to begin their individual gradient descent learning.
 
 My key finding is that under a specific data setting, their supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard form. It seems unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but it's **not** unexpected. 
 
@@ -12,7 +12,7 @@ My key finding is that under a specific data setting, their supervised regressio
 
 The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most of the papers in this area make one key assumption :
 
-- although data is sparse, problems are abundant
+```*although data is sparse, problems are abundant*```
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, then we could gain insights into the overall learning pattern. Using this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
@@ -26,7 +26,7 @@ As I'm only interested in supervised regression here, the loss is just MSE.
 
 3. The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png)
 
-Notice the minimization is over the initial parameters before taking the first gradient step in the inner loop, i.e the \theta without any subscript.
+Notice the minimization is over the initial parameters before taking the first gradient step in the inner loop, i.e the \theta without subscript.
 
 
 ## Reproduction Methodology
