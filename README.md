@@ -85,14 +85,18 @@ In Fig 6 is a more challenging functional shape, a superposition of sine and cos
 
 
 
-
-### Some Thoughts
+### Some Final Thoughts
 To assess the merit of a meta-learning algorithm, some careful analysis is needed. When a deep net fails to learn, a number of factors might be at play. The typical problems are 1) the model is either overfitted or underfitted due to too much or not enough capacity, 2) hyperparameters not properly tuned, 3) the wrong architecture is used. 
 
-A meta learning algorithm fails could be attributed to 1) the learning procedure fails to capture the common characteristics in the task distribution, in this case, the optimal initialization doesn't provide sufficient inductive bias to learn in the K-shot regime, 2) the underlying model architecture is not appropriate for few shot learning of the specific task type, lastly, 3) with high probability, the few steps of gradient decent converge to a bad local optimum.  
+A meta learning algorithm may fail for a different set of reasons. Possible attribution include 
 
-I'll address *maml's* weaknesses in these terms in a separate blog. 
+1. the learning procedure fails to capture the common characteristics in the task distribution; in this case, the optimal initialization doesn't provide sufficient inductive bias to learn in the K-shot regime, 
 
+2. the underlying model architecture is not appropriate for few shot learning of the specific task type, 
+
+3. with high probability, the few steps of gradient decent converge to a bad local optimum.  
+
+I'll leave a detailed analysis to a separate blog. 
 
 
 ### Code
