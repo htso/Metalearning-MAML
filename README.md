@@ -1,5 +1,4 @@
 # Reproducing MAML
-
 This is an attempt to reproduce the results in the MAML paper of [Finn et al (2017)[1]](https://arxiv.org/abs/1703.03400), the need of which is explained in [2]. *Maml* is a meta-learning algorithm that learns to generalize from the experience of learning. 
 
 The basic premise of the paper is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid adaptation and generalization. *Maml* uses the standard technique of gradient descent. But instead of descending onto an optimal parameter for a neural network, it uses gradient decent to find some *common* starting point for a pool of models to begin their individual gradient descent learning.
@@ -7,12 +6,11 @@ The basic premise of the paper is that parameter initialization has important in
 My key finding is that under a specific data setting, their supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard form. It seems unable to extend its excellent performance to certain common periodic functions, a disappointing conclusion but it's **not** unexpected. And I'll speculate the reasons that this is so.
 
 ### Introduction
-
 *Maml*, short for Model-Agnostic Meta-Learning, falls in the category of K-shot learning where K, the number of available examples, is usually no more than 20. The motivation comes from the fact that any two-year old could recognize a giraffe after seeing a few examples, in contrast with the many deep learning models training on millions of data points just to do as well as a new-born human. 
 
-The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most of the papers in this area make one key assumption :
+The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most papers in this area rely on one key assumption :
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__although data is sparse, problems are abundant__
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__Although data is sparse, problems are abundant.__
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, then we could gain insights into the overall learning pattern. Using this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
@@ -30,12 +28,24 @@ Notice the minimization is over the initial parameters before taking the first g
 
 
 ### Reproduction Methodology
+To reproduce a published result, it's not enough to just run the github code on the same datasets that the authors have investigated. An algorithm must be judged on an out-of-sample basis, ie. it must demonstrate its ability to generalize. 
 
-To reproduce a published result, it's not enough to just run the github code on a given datasets. An algorithm must be judged on an out-of-sample basis, ie. it must demonstrate its ability to generalize. In the case of meta-learning, this requirement has implication on two levels. First, with high probability, *maml* needs to give birth to a model that does well on a test set that it wasn't trained on. Secondly, it must be able to learn as rapidly and stay as fit on tasks drawn from a sufficiently large portion of the meta distribution. So, to succeed as a meta-learning algorithm, I want to demonstrate that 1) a large fraction of the resultant models have good out-of-sample performance, 2) the model learning remains robust to slight perturbation in the meta distribution. 
+Standard modeling procedure in machine learning requires that a test data set be kept in isolation from the training and validation set. After model building is completed, it is evaluated on the final model to come up with a measure of its generalization capability.   
+
+In the case of meta-learning, the assessment is not to be made on individual models, but on the collective whole that falls out of the learning algorithm. The test set in this case is not some part of a dataset, but a number of _complete datasets_ that the meta-learning procedure has never seen during training. 
+
+This requirement has implications on two levels. First, with high probability, *maml* needs to give birth to a model that does well on a test set that it wasn't trained on. Secondly, it must be able to learn as rapidly and stay as fit on tasks drawn from a sufficiently large portion of the meta distribution. So, to succeed as a meta-learning algorithm, I want to demonstrate that 1) a large fraction of the resultant models have good out-of-sample performance, 2) the model learning remains robust to slight perturbation in the meta distribution. 
 
 To demonstrate 1), I will show the out-of-sample prediction of the models learned from the same task generator. For 2), I introduce slight deviations in the functional shape and show the result on the models' out-of-sample performance.
 
-Similar to an ablation study[3], I want to poke around the neighborhood of the meta space to identify  regimes where the model, in this case the meta-model is sensitive to the distribution of tasks and how far I could go before learning fails.
+Similar to an ablation study[3], I want to poke around the neighborhood of the meta space to identify region where the model, in this case the meta-model is sensitive to the distribution of tasks and how far I could go before learning fails.
+
+### Test procedure in details
+An important control parameter is the range of x, since this is the input in the neural net. The value of x is fixed in a range, so that every dataset generated during meta training comes from this set range. For example, the sine function in said paper is evaluated between -5 and 5. The K shots for training and the K shots for validation are randomly picked in this range. 
+
+During meta test phase, I divide this range into a train portion and a test portion. For example, a model is trained on data from -5 to 3, then tested on x in [3,5]. This is the first degree of meta-testing.
+
+A more rigorous assessment of the generalization capability woukd be as follow. All models trained during meta-leraning phase are based on x in [-5,5]. For testing, new data are drawn from [5, 10] for the same data generator, and the trained models are evaluated on this new x range.
 
 
 ### Data
@@ -61,7 +71,7 @@ This first graph (Fig 1) is Finn's regression problem with identical parameters.
 
 ![Fig1](Img/Fig1.jpg)
 
-In Fig 2, I allow the amplitude to span a wider range, from 0.1 to 10. The out-of-sample predictions start to deteriorate (right graph). But overall, it still knows the function is upward in the test range. 
+In Fig 2, I allow the amplitude to span a wider range, from 0.1 to 10. The out-of-sample predictions start to deteriorate (right graph). But overall, it still knows the function is upward sloping in the test range. 
 
 ![Fig2](Img/Fig2.png)
 
@@ -77,6 +87,10 @@ In Fig 6 is a more challenging functional shape, a superposition of sine and cos
 
 
 ### Some Thoughts
+To assess the merit of a meta-learning algorithm, some careful analysis is needed. When a deep net fails to learn, a number of factors might be at play. For example, 
+
+1. 
+
 
 
 ### Conclusion

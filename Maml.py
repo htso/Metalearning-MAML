@@ -30,7 +30,7 @@ class MAML:
         if input_tensors is None:
             self.inputa = tf.placeholder(tf.float32)
             self.inputb = tf.placeholder(tf.float32)
-            self.labelb = tf.placeholder(tf.float32)
+            self.labela = tf.placeholder(tf.float32)
             self.labelb = tf.placeholder(tf.float32)
         else:
             self.inputa = input_tensors['inputa']

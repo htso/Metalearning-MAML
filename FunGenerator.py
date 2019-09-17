@@ -11,18 +11,17 @@ class FunGenerator(object):
     Generate periodic functional shapes slightly more complex than a sine or cosine. The current implementation generates a product of one sine and cosine.
     Just modify generate_period_fun for other possibility.
     """
-    def __init__(self, num_pts=100, batch_size=1, param_range=None, train_test_split=[0.7, 0.2, 0.1], dim_input=1, dim_output=1):
+    def __init__(self, train_test_split=[5, 5, 20], batch_size=1, param_range=None, dim_input=1, dim_output=1):
         """
-        num_pts: number of points on the function to generate 
+        train_test_split : list of three integers, first is # training data, second # of validation, 
+                           last is the # of test data, which is the last chunk in the sequence. 
+                           So that the test set measures how well the model does on unseen, out-of-sample prediction.
         batch_size: size of meta batch size (e.g. number of functions)
         param_range : dictionary, where
             key : {x, amp, freq, phase, function, lin_slp, lin_offset}, 
             value : list of two values specifying the minimum and maximum of the parameter for that function
             For example, key = {"x": [0, 2*pi], amp": [0.5, 1.0], "freq": [1.0, 3.0], "phase": [pi, 2*pi], "function":[0, 2]}           
         noise_sd : variance of the normally distributed noise    
-        train_test_split : list of three percentages, first is the percent of training data, second percent of validation, 
-                           last is the percent of test data, which is the last chunk in the sequence. This is intended to make the test
-                           set measures how well the model does on unseen, out-of-sample prediction.
         dim_input : default to 1
         dim_output : default to 1
         type : 1=periodic function, 2=linear
@@ -35,30 +34,38 @@ class FunGenerator(object):
         """
         self.Type = param_range.get("Type", "periodic")
         self.batch_size = batch_size
-        self.num_pts = num_pts
         self.dim_input = dim_input
         self.dim_output = dim_output
-        self.train_pct = train_test_split[0]
-        self.val_pct = train_test_split[1]
-        self.test_pct = train_test_split[2]
         self.x_rng = param_range.get("x", [0,10])
         self.amp = param_range.get("amp", [1,1])
-        self.freq = param_range.get("freq", [0.2,0.2])
+        self.freq = param_range.get("freq", [1/(2*np.pi), 1/(2*np.pi)])
         self.phase = param_range.get("phase", [0,np.pi])
         self.function = param_range.get("function", [0,0])
         self.lin_offset = param_range.get("lin_offset", [0,0])
         self.lin_slp = param_range.get("lin_slp", [1,-1])
         self.innovation_sd = param_range.get("innovation_sd", 0)
-        if self.Type is "periodic":
+        if self.Type == "periodic":
             self.generate = self.generate_periodic_fun
-        elif self.Type is "linear":
+        elif self.Type == "linear":
             self.generate = self.generate_linear
-        else:
+        elif self.Type == "Finn":
+            # Reproduce section 5.1 on Regression in Finn et al 2017 >>>>>>>>>>>>
+            # These parameters produce the sine function used in Finn
+            self.x_rng = [-5, 5]
+            self.amp = [0.1, 5.0]
+            self.freq = [1/(2*np.pi), 1/(2*np.pi)]
+            self.phase = [0, np.pi]
+            self.function = [0,0]
+            self.innovation_sd = 0.0
+            self.generate = self.generate_periodic_fun
+        else:    
             raise ValueError("i don't know this Type?")
 
-        # print('self.batch_size : ', self.batch_size)
-        # print('self.innovation_sd : ', self.innovation_sd)
-
+        self.n_train = train_test_split[0]
+        self.n_val = train_test_split[1]
+        self.n_test = train_test_split[2] 
+        self.num_pts = sum(train_test_split)
+        
     def train_val_test_split(self, x, y):
         '''
         Split sequence data into a training, validation, and a test set according to the following methodology.
@@ -78,25 +85,21 @@ class FunGenerator(object):
             (batch_size, number of data points, 1)
 
         '''
-        n_train = int(self.train_pct * self.num_pts)
-        n_val = int(self.val_pct * self.num_pts)
-        n_test = self.num_pts - n_train - n_val
-        
-        x1 = x[:,:(n_train + n_val),:]
-        y1 = y[:,:(n_train + n_val),:]
+        x1 = x[:,:(self.n_train + self.n_val),:]
+        y1 = y[:,:(self.n_train + self.n_val),:]
         # randomly mix the first (n_train + n_val) points
-        ix = np.arange(n_train + n_val)
+        ix = np.arange(self.n_train + self.n_val)
         random.shuffle(ix) # this function applies in place
-        ix_train = ix[:n_train] # indices to the first n_train points
-        ix_val = ix[-n_val:] # validation is the last n_val points
+        ix_train = ix[:self.n_train] # indices to the first n_train points
+        ix_val = ix[-self.n_val:] # validation is the last n_val points
         # x
         x_train = x1[:,ix_train, :]
         x_val   = x1[:,ix_val,   :]
-        x_test  =  x[:,-n_test:, :]
+        x_test  =  x[:,-self.n_test:, :]
         # y = f(x)
         y_train = y1[:,ix_train, :]
         y_val   = y1[:,ix_val,   :]
-        y_test  =  y[:,-n_test:, :]
+        y_test  =  y[:,-self.n_test:, :]
 
         return x_train, y_train, x_val, y_val, x_test, y_test
 
@@ -205,9 +208,6 @@ class FunGenerator(object):
             phase :
                 phase1 = phase2 = self.phase[0]
         '''
-        n_train = int(self.train_pct * self.num_pts)
-        n_val = int(self.val_pct * self.num_pts)
-        n_test = self.num_pts - n_train - n_val
 
         #print('freq[0] - freq[1] = ', np.absolute(self.freq[0] - self.freq[1])        )
         if np.absolute(self.freq[0] - self.freq[1]) < 1e-5:
@@ -273,21 +273,21 @@ class FunGenerator(object):
         # function. Then test it on a truly out-of-sample data in the range of x that the model has never
         # seen before.
         #
-        x1 = x[:,:(n_train + n_val),:]
-        y1 = y[:,:(n_train + n_val),:]
+        x1 = x[:,:(self.n_train + self.n_val),:]
+        y1 = y[:,:(self.n_train + self.n_val),:]
         # randomly mix the first (n_train + n_val) points
-        ix = np.arange(n_train + n_val)
+        ix = np.arange(self.n_train + self.n_val)
         random.shuffle(ix) # this function applies in place
-        ix_train = ix[:n_train] # indices to the first n_train points
-        ix_val = ix[-n_val:] # validation is the last n_val points
+        ix_train = ix[:self.n_train] # indices to the first n_train points
+        ix_val = ix[-self.n_val:] # validation is the last n_val points
         # x
         x_train = x1[:,ix_train, :]
         x_val   = x1[:,ix_val,   :]
-        x_test  =  x[:,-n_test:, :]
+        x_test  =  x[:,-self.n_test:, :]
         # y = f(x)
         y_train = y1[:,ix_train, :]
         y_val   = y1[:,ix_val,   :]
-        y_test  =  y[:,-n_test:, :]
+        y_test  =  y[:,-self.n_test:, :]
 
         # All data objects have this shape :
         # x_train, y_train, x_val, y_val, x_test, y_test,

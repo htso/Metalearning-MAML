@@ -1,33 +1,25 @@
 """
- Reproduce Finn et al 2017, Fig 3, Table 2, Fig 7.
+Reproduce Finn et al 2017, Fig 3, Table 2, Fig 7.
 
-    python Main.py --datasource=fun --metatrain_iterations=10000 --K=1000 --hidden1=80 --hidden2=80 --grad_steps=10 --train=True
-    python Main.py --datasource=fun --meta_batch_size=10 --K=100 --grad_steps=20 --hidden1=80 --hidden2=80 --train=False
+To train:
 
-    python Main.py --datasource=fun --metatrain_iterations=100000 --meta_batch_size=10 --K=5 --grad_steps=1 --train=True
-    python Main.py --datasource=fun --metatrain_iterations=100000 --meta_batch_size=10 --K=5  --grad_steps=1  --train=True
-    python Main.py --datasource=fun --metatrain_iterations=100000 --meta_batch_size=10 --K=5  --grad_steps=10 --train=True
+    python Main.py --datasource=fun --Type=Finn --metatrain_iterations=15000 --hidden1=40 --hidden2=40 --grad_steps=5 --K=10 --n_val=10 --n_test=0 --train=True
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+After training is completed:
 
-    NOTE : To use datasource=fun, specify the fun shape parameters w, ph, amp, ftype in main()
+    python Main.py --datasource=fun --Type=periodic --meta_batch_size=8 --grad_steps=5 --K=20 --n_val=20 --n_test=20 --x_left=-1.59 --x_right=1.59 --w_lb=0.15915  --w_ub=0.15915 --train=False
 
-    Harmonic functions (K=100) :
-        python Main.py --datasource=fun --metatrain_iterations=100000 --meta_batch_size=10 --K=10 --grad_steps=1 --train=True
-        python Main.py --datasource=fun --meta_batch_size=100 --K=100 --train=False
+NOTE : Set --train=False and --n_test=nn to do out-of-sample testing. Need to set x_right to something outside
+of the original training range. For ex, if trained on [-5, 5] (x_left=-1.59 & x_right=1.59), then you may want to 
+test on [5, 10]. Set x_right=3.18 ==> 3.18*3.14 ~ 10.
 
-    10-shot sinusoid:
-        python Main.py --datasource=sinusoid --logdir=logs/sine --metatrain_iterations=70000 --meta_batch_size=10 --K=10 --grad_steps=10 --train=True
-        python Main.py --datasource=sinusoid --logdir=logs/sine --meta_batch_size=10 --K=10 --train=False
 
-    Test on trained model:    
-        python Main.py --datasource=sinusoid --logdir=logs/sine --metatrain_iterations=70000 --K=10 --train=False
+    python Main.py --datasource=fun --Type=linear --metatrain_iterations=10000 --hidden1=40 --hidden2=40 --grad_steps=10 --K=10 --n_val=10 --n_test=0 --train=True
 
-    10-shot sinusoid baselines:
-        python Main.py --datasource=sinusoid --logdir=logs/sine --pretrain_iterations=70000 --metatrain_iterations=0 --K=10 --baseline=oracle
-        python Main.py --datasource=sinusoid --logdir=logs/sine --pretrain_iterations=70000 --metatrain_iterations=0 --K=10
 
-    To run evaluation, use the '--train=False' flag and the '--test_set=True' flag to use the test set.
+
+
+
 
 ========== Some thoughts =============================================
 
@@ -169,15 +161,17 @@ FLAGS = flags.FLAGS
 ## Dataset/method options
 flags.DEFINE_string('datasource', 'fun', 'sinusoid or fun')
 ## Training options
-flags.DEFINE_integer('K', 100, 'number of examples used for inner gradient update (the K in K-shot learning).')
+flags.DEFINE_integer('K', 5, 'number of examples used for inner gradient update (the K in K-shot learning).')
+flags.DEFINE_integer('n_val', 5, 'number of examples used for validation in inner gradient update.')
+flags.DEFINE_integer('n_test', 0, 'number of examples used for out-of-sample testing.')
 flags.DEFINE_integer('hidden1', 40, 'size of first hidden layer in FC net.')
 flags.DEFINE_integer('hidden2', 40, 'size of second hidden layer in FC net.')
-flags.DEFINE_integer('metatrain_iterations', 10000, 'number of metatraining iterations.') # 15k for omniglot, 50k for sinusoid
-flags.DEFINE_integer('meta_batch_size', 10, 'number of tasks sampled per meta-update')
+flags.DEFINE_integer('metatrain_iterations', 15000, 'number of metatraining iterations.') # 15k for omniglot, 50k for sinusoid
+flags.DEFINE_integer('meta_batch_size', 25, 'number of tasks sampled per meta-update')
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.') # default is no pretraining
 flags.DEFINE_float('meta_lr', 0.001, 'beta, the base learning rate of the generator')
 flags.DEFINE_float('update_lr', 0.01, 'alpha, or step size for inner gradient update.') # 0.1 for omniglot
-flags.DEFINE_integer('grad_steps', 10, 'number of inner gradient updates during training.')
+flags.DEFINE_integer('grad_steps', 1, 'number of inner gradient updates during training.')
 flags.DEFINE_integer('test_grad_steps', 20, 'number of gradient updates during test.')
 
 # oracle means task id is input (only suitable for sinusoid)
@@ -195,10 +189,28 @@ flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest mo
 flags.DEFINE_bool('test_set', False, 'Set to True to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('train_K', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step during training. (use if you want to test with a different value)') # 0.1 for omniglot
-
 flags.DEFINE_bool('DEBUG', False, 'Turn debug mode on. Default is False')
 
-def train(model, saver, sess, exp_string, data_generator, resume_itr=0, gnm="Loss_iter.pdf"):
+# parameters for data generator 
+flags.DEFINE_float('n_sd', 0.1, 'std dev of noise for data generator.')
+flags.DEFINE_float('x_left', -1.59, 'left end of x, in multiple of pi.')
+flags.DEFINE_float('x_right', 1.59, 'right end of x, in multiple of pi.')
+flags.DEFINE_float('amp_lb', 0.1, 'amplitude lower bound.')
+flags.DEFINE_float('amp_ub', 5.0, 'amplitude upper bound.')
+flags.DEFINE_float('w_lb', 0.15915, 'angular frequency, lower bound.')
+flags.DEFINE_float('w_ub', 0.15915, 'angular frequency, upper bound.')
+flags.DEFINE_float('ph_lb', 0.0, 'phase lower bound, in multiple of pi.')
+flags.DEFINE_float('ph_ub', 1.0, 'phase upper bound, in multiple of pi.')
+flags.DEFINE_float('offset_lb', -1.0, 'linear offset, lower bound.')
+flags.DEFINE_float('offset_ub', 1.0, 'linear offset, upper bound.')
+flags.DEFINE_float('slp_lb', -2.0, 'slope, lower bound.')
+flags.DEFINE_float('slp_ub', 2.0, 'slope, upper bound.')
+flags.DEFINE_integer('fType', 0, '{0,1,2}, type of periodic function, see explanation in FunGenerator.py')
+flags.DEFINE_string('Type', 'periodic', "either 'periodic', 'linear', or 'Finn', see explanation in FunGenerator.py")
+
+
+
+def train(model, saver, sess, exp_string, data_generator, resume_itr=0, gnm="Loss.jpg"):
 
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
@@ -248,7 +260,6 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0, gnm="Los
                 y_eq = res["y_equal_spaced"]
                 # print('x_train shape :', x_train.shape)
                 # print('x_val shape :', x_val.shape)
-
             elif FLAGS.datasource == 'sinusoid':
             	# batch_x, batch_y shape:
                 #
@@ -513,13 +524,13 @@ def test(model, saver, sess, exp_string, data_generator, test_grad_steps, gnm):
     print('test_grad_steps :', test_grad_steps)
     print('exp_string :', exp_string)
 
-    NUM_FUN = 3
+    NUM_FUN = FLAGS.meta_batch_size
 
     OutAs = []
     OutBs = []
 
     #pp = PdfPages(gnm)
-    fig, ax = plt.subplots(NUM_FUN, 2, sharex=True, sharey=True, figsize=(11, 15))
+    fig, ax = plt.subplots(NUM_FUN, 2, sharex=True, sharey=False, figsize=(11, 20))
 
     for ii in range(NUM_FUN):
         if 'generate' not in dir(data_generator):
@@ -621,7 +632,7 @@ def test(model, saver, sess, exp_string, data_generator, test_grad_steps, gnm):
         ax[ii,0].grid(True)
         if ii == 0:
             ax[ii,0].legend(loc="upper right")
-            ax[ii,0].set_title('In-sample Actual vs Fit\ngrad_steps : %d' % FLAGS.grad_steps)
+            ax[ii,0].set_title('In-sample Actual vs Fit\ngrad_steps : %d\nK : %d, n_val : %d' % (FLAGS.grad_steps, FLAGS.K, FLAGS.n_val))
             
         # Predict on test data (inputb)
         ax[ii,1].plot(x_eq[ii,:,0], y_eq[ii,:,0], linewidth=1)
@@ -631,15 +642,15 @@ def test(model, saver, sess, exp_string, data_generator, test_grad_steps, gnm):
         ax[ii,1].grid(True)          
         if ii == 0:
             ax[ii,1].legend(loc="lower left")
-            ax[ii,1].set_title('Out-of-sample Actual vs Predict\ntest_grad_steps : %d' % test_grad_steps )
+            ax[ii,1].set_title('Out-of-sample Actual vs Predict\nn_test : %d' % (FLAGS.n_test))
             
         OutAs.append(outAs1)
         OutBs.append(outBs1)
         
-    #plt.tight_layout()
+    
     #pp.savefig(fig, orientation = 'landscape')
     #pp.close()
-
+    plt.tight_layout()
     plt.savefig(gnm)
 
     # out_filename = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.K) + '_stepsize' + str(FLAGS.update_lr) + '.csv'
@@ -662,78 +673,62 @@ def test(model, saver, sess, exp_string, data_generator, test_grad_steps, gnm):
     #                     # pickle.dump({'b2': B2}, f)
     #                     # pickle.dump({'b3': B3}, f)
     # f.close()   
-    
+
 
 def main():
     
-    model_folder = 'Fun=1_ph=0.0_w=0.3-0.4_amp=1.0_mbs=10_K=1000_grad_steps=10_updateLR=0.01Iter=10000_H=60-60'
-
-    print('meta_batch_size :', FLAGS.meta_batch_size)
-    print('K :', FLAGS.K)
-
-    split = [0.4, 0.4, 0.2]
-
-    # Define the functional characteristics of the data 
-    n_sd = 0.0
-    amp_rng = [1.0, 1.0]
-    x_rng = [0, 4*np.pi]
-    w = [0.3, 0.4] # smaller w ==> smoother
-    ph = [0, 0]
-    fType = [1, 1]
-    Type = "periodic"
-    param_rng = {'x':x_rng, 'amp':amp_rng, 'freq':w, 'phase':ph, 'function':fType, "innovation_sd":n_sd, "Type":Type }
+    model_folder = 'ReproduceFinn_noNorm_mbs=25_K=10_grad_steps=5_updateLR=0.01Iter=15000_H=40-40'
     
-    
-    # n_sd = 0.1
-    # x_rng = [0, 2*np.pi]
-    # offset = [-1, 1]
-    # slp = [-2, 2]
-    # Type = "linear"
-    # param_rng = { 'x':x_rng, "lin_slp":slp, "lin_offset":offset, "innovation_sd":n_sd, "Type":Type }
+    split = [FLAGS.K, FLAGS.n_val, FLAGS.n_test]
+    print('split : ', split)
 
-    # Reproduce section 5.1 on Regression in Finn et al 2017 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # These shape parameters lead to same sine function used in Finn
-    # n_sd = 1.0
-    # amp_rng = [1.0, 5.0]
-    # x_rng = [-5, 5]
-    # w = [1/(2*np.pi), 1/(2*np.pi)] # so that f(x) = a*sin( 2*pi(1/2*pi) x + ph ) = a*sin(x + ph)
-    # #w = [0.1, 0.2] 
-    # ph = [0, np.pi]
-    # fType = [0, 0]
-    # Type = "periodic"
-    # param_rng = { 'x':x_rng, 'amp':amp_rng, 'freq':w, 'phase':ph, 'function':fType, 
-    #               "innovation_sd":n_sd, "Type":Type }
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Data characteristics for FunGenerator
+    x_rng = [FLAGS.x_left*np.pi, FLAGS.x_right*np.pi]
+    amp_rng = [FLAGS.amp_lb, FLAGS.amp_ub]
+    w = [FLAGS.w_lb, FLAGS.w_ub]
+    ph = [FLAGS.ph_lb, FLAGS.ph_ub]
+    n_sd = FLAGS.n_sd
+    offset = [FLAGS.offset_lb, FLAGS.offset_ub]
+    slp = [FLAGS.slp_lb, FLAGS.slp_ub]
+    fType = [FLAGS.fType, FLAGS.fType]
+    Type = FLAGS.Type
+    param_rng = {'x':x_rng, 'amp':amp_rng, 'freq':w, 'phase':ph, "lin_slp":slp, "lin_offset":offset, \
+                 'function':fType, "innovation_sd":n_sd, "Type":Type }
+    print('param_rng : ', param_rng)    
 
-    exp_string = 'Fun='
-
-    # if slp[0] == slp[1]:
-    #     exp_string += str(slp[0])
-    # else:
-    #     exp_string += str(slp[0]) + '-' + str(slp[1])
-    # if offset[0] == offset[1]:
-    #     exp_string += str(offset[0])
-    # else:
-    #     exp_string += str(offset[0]) + '-' + str(offset[1])
-
-    if fType[0] == fType[1]:
-        exp_string += str(fType[0])
+    if Type == 'periodic':
+        exp_string = 'Fun'
+        if fType[0] == fType[1]:
+            exp_string += '=' + str(fType[0])
+        else:
+            exp_string += '=' + str(fType[0]) + '-' + str(fType[1])
+        if ph[0] == ph[1]:
+            exp_string += '_ph=' + "{:.1f}".format(ph[0])
+        else:
+            exp_string += '_ph=' + "{:.1f}".format(ph[0]) + '-' + "{:.1f}".format(ph[1])   
+        if w[0] == w[1]:
+            exp_string += '_w=' + "{:.1f}".format(w[0])
+        else:
+            exp_string += '_w=' + "{:.1f}".format(w[0]) + '-' + "{:.1f}".format(w[1])
+        if amp_rng[0] == amp_rng[1]:
+            exp_string += '_amp=' + "{:.1f}".format(amp_rng[0])
+        else:
+            exp_string += '_amp=' + "{:.1f}".format(amp_rng[0]) + '-' + "{:.1f}".format(amp_rng[1])
+    elif Type == 'linear':
+        exp_string = 'Linear'
+        if slp[0] == slp[1]:
+            exp_string += '_slp=' + str(slp[0])
+        else:
+            exp_string += '_slp=' + str(slp[0]) + '-' + str(slp[1])
+        if offset[0] == offset[1]:
+            exp_string += '_ofs=' + str(offset[0])
+        else:
+            exp_string += '_ofs=' + str(offset[0]) + '-' + str(offset[1])    
+    elif Type == 'Finn':
+        exp_string = 'ReproduceFinn'
     else:
-        exp_string += str(fType[0]) + '-' + str(fType[1])
+        raise ValueError('i have no idea what is this Type.')  
 
-    if ph[0] == ph[1]:
-        exp_string += '_ph=' + "{:.1f}".format(ph[0])
-    else:
-        exp_string += '_ph=' + "{:.1f}".format(ph[0]) + '-' + "{:.1f}".format(ph[1])   
-    if w[0] == w[1]:
-    	exp_string += '_w=' + "{:.1f}".format(w[0])
-    else:
-    	exp_string += '_w=' + "{:.1f}".format(w[0]) + '-' + "{:.1f}".format(w[1])
-    if amp_rng[0] == amp_rng[1]:
-    	exp_string += '_amp=' + "{:.1f}".format(amp_rng[0])
-    else:
-    	exp_string += '_amp=' + "{:.1f}".format(amp_rng[0]) + '-' + "{:.1f}".format(amp_rng[1])
-    
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
@@ -744,10 +739,9 @@ def main():
         # half for testing. So first half is inputa, 2nd half inputb
         data_generator = DataGenerator(FLAGS.K*2, FLAGS.meta_batch_size)
     elif FLAGS.datasource == 'fun':
-        data_generator = FunGenerator(num_pts=FLAGS.K, \
+        data_generator = FunGenerator(train_test_split=split, \
         	                          batch_size=FLAGS.meta_batch_size, \
         	                          param_range=param_rng, \
-        	                          train_test_split=split, \
         	                          dim_input=1, dim_output=1)
     else:
         raise ValueError('datasource must be either sinusoid or fun.')  
@@ -778,9 +772,7 @@ def main():
         model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
 
     model.summ_op = tf.summary.merge_all()
-
     saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=100)
-
     sess = tf.InteractiveSession()
     
     if FLAGS.DEBUG is True:
@@ -796,26 +788,22 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-    # Make the folder name as informative as possible
-
-    exp_string += '_mbs='+str(FLAGS.meta_batch_size) + '_K=' + str(FLAGS.train_K) + '_grad_steps=' + str(FLAGS.grad_steps) + '_updateLR=' + str(FLAGS.train_update_lr) + 'Iter=' + str(FLAGS.metatrain_iterations)
-    
-    exp_string += '_H=' + str(FLAGS.hidden1) + '-' + str(FLAGS.hidden2)
-
     if FLAGS.stop_grad:
         exp_string += '_stopgrad'
     if FLAGS.baseline:
         exp_string += FLAGS.baseline
+    if FLAGS.norm == 'batch_norm':
+        exp_string += '_batchnorm'
+    elif FLAGS.norm == 'layer_norm':
+        exp_string += '_layernorm'
+    elif FLAGS.norm == 'None':
+        exp_string += '_noNorm'
+    else:
+        raise ValueError('Norm setting not recognized.')
 
-    # if FLAGS.norm == 'batch_norm':
-    #     exp_string += '_batchnorm'
-    # elif FLAGS.norm == 'layer_norm':
-    #     exp_string += '_layernorm'
-    # elif FLAGS.norm == 'None':
-    #     exp_string += '_nonorm'
-    # else:
-    #     raise ValueError('Norm setting not recognized.')
-
+    # Make the folder name as informative as possible
+    exp_string += '_mbs='+str(FLAGS.meta_batch_size) + '_K=' + str(FLAGS.train_K) + '_grad_steps=' + str(FLAGS.grad_steps) + '_updateLR=' + str(FLAGS.train_update_lr) + 'Iter=' + str(FLAGS.metatrain_iterations)
+    exp_string += '_H=' + str(FLAGS.hidden1) + '-' + str(FLAGS.hidden2)
     print('\nexp_string : ', exp_string)
 
     resume_itr = 0
@@ -873,7 +861,6 @@ def main():
     # it would be asking a model to predict something it's never seen before. 
     if FLAGS.train:
         print('.... call train() .............................')
-        #gnm = FLAGS.logdir + '/' + 'Loss_iterations' + '.pdf'
         gnm = FLAGS.logdir + '/' + 'Loss_Angles_Distances_over_iter' + '.jpg'
         train(model, saver, sess, exp_string, data_generator, resume_itr, gnm=gnm)
     else:
