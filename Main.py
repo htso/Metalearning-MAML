@@ -14,7 +14,7 @@ of the original training range. For ex, if trained on [-5, 5] (x_left=-1.59 & x_
 test on [5, 10]. Set x_right=3.18 ==> 3.18*3.14 ~ 10.
 
 
-    python Main.py --datasource=fun --Type=linear --metatrain_iterations=10000 --hidden1=40 --hidden2=40 --grad_steps=10 --K=10 --n_val=10 --n_test=0 --train=True
+    python Main.py --datasource=fun --Type=linear --metatrain_iterations=10000 --grad_steps=10 --K=10 --n_val=10 --n_test=0 --offset_lb=-1 --offset_ub=1 --slp_lb=-2 --slp_ub=2 --train=True
 
 
 
