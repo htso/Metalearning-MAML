@@ -24,7 +24,7 @@ So, by optimizing on this total loss, we're effectively finding out what's the b
 
 3. The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png)
 
-Notice the minimization is over the initial parameters before taking the first gradient step in the inner loop, i.e the \theta without subscript.
+Notice the minimization is over the initial parameter vector ![theta](Img/theta.png) (no subscript) before taking the first gradient step in the inner loop.
 
 
 ### Reproduction Methodology
