@@ -18,7 +18,7 @@ Interested reader should dive into this excellent paper, and I will skip the tec
 
 1. The *maml* model is not a model on data, but a model on the starting parameter values of a pool of models, thus the term *meta*.
 
-2. The objective of the algorithm is the sum of the losses on all the tasks that are fed into *maml* collectively, ![objective](Img/Eqn1.gif). 
+2. The objective of the algorithm is the sum of the losses on all the tasks that are fed into *maml* collectively, ![objective](Img/Eqn1-1.png). 
 
 So, by optimizing on this total loss, we're effectively finding out what's the best characteristics for all the models to share on a given task distribution. As I'm only interested in supervised regression here, the loss is just MSE here. 
 
