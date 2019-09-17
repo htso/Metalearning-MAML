@@ -10,7 +10,7 @@ My key finding is that under a specific data setting, their supervised regressio
 
 The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most papers in this area rely on one key assumption :
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__Although data is sparse, problems are abundant.__
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__although data is sparse, problems are abundant.__
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, we could then gain insights into the overall learning pattern. Based on this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
@@ -41,11 +41,11 @@ To demonstrate 1), I will show the out-of-sample prediction of the models learne
 Similar to an ablation study[3], I want to poke around the neighborhood of the meta space to identify region where the model, in this case the meta-model is sensitive to the distribution of tasks and how far I could go before learning fails.
 
 ### Test procedure in details
-An important control parameter is the range of x, since this is the input in the neural net. The value of x is fixed in a range, so that every dataset generated during meta training comes from this set range. For example, the sine function in said paper is evaluated between -5 and 5. The K shots for training and the K shots for validation are randomly picked in this range. 
+An important control parameter is the range of x, since this is the input in the neural nets. The value of x is fixed in a range, so that every dataset generated during meta training comes from this set range. For example, the sine function in said paper is evaluated between -5 and 5. The K shots for training and the K shots for validation are randomly picked in this range. 
 
 During meta test phase, I divide this range into a train portion and a test portion. For example, a model is trained on data from -5 to 3, then tested on x in [3,5]. This is the first degree of meta-testing.
 
-A more rigorous assessment of the generalization capability woukd be as follow. All models trained during meta-leraning phase are based on x in [-5,5]. For testing, new data are drawn from [5, 10] for the same data generator, and the trained models are evaluated on this new x range.
+A more rigorous assessment of the generalization capability would be as follow. All models trained during meta-leraning phase are based on x in [-5,5]. For testing, new data are drawn from [5, 10] for the same data generator, and the trained models are evaluated on this new range.
 
 
 ### Data
@@ -87,13 +87,12 @@ In Fig 6 is a more challenging functional shape, a superposition of sine and cos
 
 
 ### Some Thoughts
-To assess the merit of a meta-learning algorithm, some careful analysis is needed. When a deep net fails to learn, a number of factors might be at play. For example, 
+To assess the merit of a meta-learning algorithm, some careful analysis is needed. When a deep net fails to learn, a number of factors might be at play. The typical problems are 1) the model is either overfitted or underfitted due to too much or not enough capacity, 2) hyperparameters not properly tuned, 3) the wrong architecture is used. 
 
-1. 
+A meta learning algorithm fails could be attributed to 1) the learning procedure fails to capture the common characteristics in the task distribution, in this case, the optimal initialization doesn't provide sufficient inductive bias to learn in the K-shot regime, 2) the underlying model architecture is not appropriate for few shot learning of the specific task type, lastly, 3) with high probability, the few steps of gradient decent converge to a bad local optimum.  
 
+More work is needed to explain maml's weaknesses in this supervised regression task for each of these possibilities. 
 
-
-### Conclusion
 
 
 ### Code
@@ -103,10 +102,12 @@ The code is taken from this [repo](https://github.com/cbfinn/maml).
 Code has been tested on 
 * python 3.7.3
 * TensorFlow v1.13.1
+* CUDA 10.1
+* Ubuntu 18.04 
 
 
 ### Usage
-To run the code, see the usage instructions at the top of `Main.py`.
+To reproduce the results, see instructions at the top of `Main.py`.
 
 ### Contact
 To ask questions or report issues, please open an issue on the [issues tracker](https://github.com/htso/maml_reproduction/issues).
