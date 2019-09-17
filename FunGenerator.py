@@ -171,14 +171,6 @@ class FunGenerator(object):
                 1           sin + cos  
                 2           sin * cos
         '''
-        # print('x shape ', x.shape)
-        # print('ep shape ', ep.shape)
-        # print('a1 ', a1)
-        # print('a2 ', a2)
-        # print('w1 ', w1)
-        # print('w2 ', w2)
-        #print('ph1 ', ph1)
-        # print('ph2 ', ph2)
         if ftype == 0:
             y = a1*np.sin(2*np.pi*w1*x + ph1) + ep
         elif ftype == 1:
