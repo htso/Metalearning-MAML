@@ -16,6 +16,8 @@ This is crucial because if we have enough problems of a similar nature, and on e
 
 Interested reader should dive into this excellent paper, and I will skip the technicality here, except for the following observations.
 
+<a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" title="\large \theta_i = \theta + \alpha \nabla_{\theta} \mathcal{L}_{\mathcal{T}_i}(f_{\theta})" /></a>
+
 1. The *maml* model is not a model on data, but a model on the starting parameter values of a pool of models, thus the term *meta*.
 
 2. The objective of the algorithm is the sum of the losses on all the tasks that are fed into *maml* collectively, ![objective](Img/meta_objective.png). 
@@ -91,7 +93,7 @@ To assess the merit of a meta-learning algorithm, some careful analysis is neede
 
 A meta learning algorithm fails could be attributed to 1) the learning procedure fails to capture the common characteristics in the task distribution, in this case, the optimal initialization doesn't provide sufficient inductive bias to learn in the K-shot regime, 2) the underlying model architecture is not appropriate for few shot learning of the specific task type, lastly, 3) with high probability, the few steps of gradient decent converge to a bad local optimum.  
 
-More work is needed to explain maml's weaknesses in this supervised regression task for each of these possibilities. 
+I'll address *maml's* weaknesses in these terms in a separate blog. 
 
 
 
