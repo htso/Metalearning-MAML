@@ -14,9 +14,9 @@ The challenge is of course how to make use of so little information to generaliz
 
 This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, we could then gain insights into the overall learning pattern. Based on this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
 
-Interested reader should dive into this excellent paper, and I will skip the technicality here, except for the following observations.
+Interested reader should dive into this excellent <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" title="\large \theta_i = \theta + \alpha \nabla_{\theta} \mathcal{L}_{\mathcal{T}_i}(f_{\theta})" /></a> paper, and I will skip the technicality here, except for the following observations.
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\large&space;\theta_i&space;=&space;\theta&space;&plus;&space;\alpha&space;\nabla_{\theta}&space;\mathcal{L}_{\mathcal{T}_i}(f_{\theta})" title="\large \theta_i = \theta + \alpha \nabla_{\theta} \mathcal{L}_{\mathcal{T}_i}(f_{\theta})" /></a>
+
 
 1. The *maml* model is not a model on data, but a model on the starting parameter values of a pool of models, thus the term *meta*.
 
