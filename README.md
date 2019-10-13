@@ -3,16 +3,16 @@ This is an attempt to reproduce the results in the *MAML* paper of [Finn et al (
 
 The basic premise is that parameter initialization has important influence over model learning. A good initialization makes it possible for rapid adaptation and generalization. *Maml* uses the optimization technique of gradient descent. Instead of descending onto an optimal parameter of a neural network, it uses gradient descent to find some *common* starting point for a pool of models to begin their individual gradient descent learning.
 
-The key finding in this exercise is that under a specific data setting, Finn's supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard sinusoid. It seems unable to extend its predictive performance to certain common periodic functions, a disappointing conclusion but it's actually **not** unexpected. And I'll explain the reasons why this is so.
+The key finding in this exercise is that under a specific data setting, Finn's supervised regression result is reproducible. However, I found that *maml* deteriorates quickly as the training data deviates from the standard sinusoid. It seems unable to extend its predictive performance to certain common periodic functions, a disappointing conclusion but it's actually **not** unexpected. I'll explain why this is so below.
 
 ### Introduction
-*Maml*, short for Model-Agnostic Meta-Learning, falls in the category of K-shot learning where K, the number of available examples, is usually no more than 20. The motivation comes from the fact that any two-year old baby could recognize a giraffe after seeing one or two examples, in contrast with the many deep learning models training on millions of data points just to do as well as a new-born human. 
+*Maml*, short for Model-Agnostic Meta-Learning, is closely related to K-shot learning where K, the number of available examples for training, is usually small. The motivation comes from the fact that any two-year old baby could recognize a giraffe after seeing just one or two examples, in contrast with the many deep learning models training on millions of data points just to do as well as a new-born human. 
 
-The challenge is of course how to make use of so little information to generalize out to the vast unknown. Most papers in this area rely on one key assumption :
+The challenge is of course how to make use of so little information to generalize to the vast unknown of unseen datasets. Most research in this area relies on one key observation, namely 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__although data is sparse, problems are abundant.__
 
-This is crucial because if we have enough problems of a similar nature, and on each problem we have a tiny little dataset, we could then gain insights into the overall learning pattern. Based on this pattern, we could generalize to solve any other problem that we've only seen a few examples of. 
+This is a crucial insight because if we have enough problems of a similar nature, and on each problem we could collect a small dataset, insights could then be gained into the overall learning pattern. Based on this pattern, we could generalize to solve other problems that we've only seen a few examples of. 
 
 Interested reader should dive into this excellent paper, and I will skip the technicality here, except for the following observations.
 
@@ -20,7 +20,7 @@ Interested reader should dive into this excellent paper, and I will skip the tec
 
 2. The objective of the algorithm is the sum of the losses on all the tasks that are fed into *maml* collectively, ![objective](Img/Eqn1-1.png). 
 
-So, by optimizing on this total loss, we're effectively finding out what's the best characteristics for all the models to share on a given task distribution. As I'm only interested in supervised regression here, the loss is just MSE here. 
+So, by optimizing on this total loss, we're effectively finding out what's the best characteristics for all the models to share on a given task distribution. As I'm only interested in supervised regression, the loss is just MSE here. 
 
 3. The goal is to minimize this collective loss as a function of the initial parameter values of the neural network, which could be considered as a meta-parameter of the algorithm, or ![meta-minimization](Img/meta_minimize.png)
 
